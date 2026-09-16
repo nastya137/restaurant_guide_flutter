@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+
+import 'app_theme.dart';
+import 'app_widgets.dart';
 import 'main.dart';
-import 'restaurant_list_screen.dart';
 
 class FilterScreen extends StatefulWidget {
   final RestaurantFilter filter;
 
-  const FilterScreen({
-    super.key,
-    required this.filter,
-  });
+  const FilterScreen({super.key, required this.filter});
 
   @override
   State<FilterScreen> createState() => _FilterScreenState();
@@ -67,87 +66,227 @@ class _FilterScreenState extends State<FilterScreen> {
       appBar: AppBar(
         title: const Text('Фильтры'),
         actions: [
-          TextButton(
-            onPressed: _reset,
-            child: const Text('Сброс'),
-          )
+          TextButton(onPressed: _reset, child: const Text('Сбросить')),
+          const SizedBox(width: 8),
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+        physics: const BouncingScrollPhysics(),
         children: [
-          const Text(
-            'Кухня',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          const SectionTitle('Кухня'),
+          const SizedBox(height: 6),
+          Text(
+            'Выберите направление, которое хочется сегодня.',
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
-
-          ..._cuisines.map((c) {
-            return RadioListTile<String>(
-              title: Text(c),
-              value: c,
-              groupValue: _cuisine,
-              onChanged: (value) {
-                setState(() {
-                  _cuisine = value!;
-                });
-              },
-            );
-          }),
-
-          const Divider(),
-
-          const Text(
-            'Дополнительно',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 9,
+            runSpacing: 9,
+            children: _cuisines.map((cuisine) {
+              final selected = cuisine == _cuisine;
+              return ChoiceChip(
+                label: Text(cuisine),
+                selected: selected,
+                showCheckmark: false,
+                avatar: selected
+                    ? const Icon(
+                        Icons.check_rounded,
+                        size: 18,
+                        color: AppColors.olive,
+                      )
+                    : null,
+                onSelected: (_) {
+                  setState(() {
+                    _cuisine = cuisine;
+                  });
+                },
+              );
+            }).toList(),
           ),
-
-          CheckboxListTile(
-            title: const Text('WiFi'),
-            value: _wifi,
-            onChanged: (v) => setState(() => _wifi = v ?? false),
-          ),
-
-          CheckboxListTile(
-            title: const Text('Парковка'),
-            value: _parking,
-            onChanged: (v) => setState(() => _parking = v ?? false),
-          ),
-
-          CheckboxListTile(
-            title: const Text('Детское меню'),
-            value: _kidsMenu,
-            onChanged: (v) => setState(() => _kidsMenu = v ?? false),
-          ),
-
-          const Divider(),
-
-          const Text(
-            'Средний чек',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-
-          RangeSlider(
-            values: _range,
-            min: 0,
-            max: 5000,
-            divisions: 10,
-            labels: RangeLabels(
-              '${_range.start.round()}₽',
-              '${_range.end.round()}₽',
+          const SizedBox(height: 32),
+          const SectionTitle('Удобства'),
+          const SizedBox(height: 14),
+          Card(
+            child: Column(
+              children: [
+                _FilterToggleTile(
+                  icon: Icons.wifi_rounded,
+                  title: 'Wi-Fi',
+                  subtitle: 'Беспроводной интернет для гостей',
+                  value: _wifi,
+                  onChanged: (value) => setState(() => _wifi = value),
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(left: 68),
+                  child: Divider(),
+                ),
+                _FilterToggleTile(
+                  icon: Icons.local_parking_rounded,
+                  title: 'Парковка',
+                  subtitle: 'Можно приехать на автомобиле',
+                  value: _parking,
+                  onChanged: (value) => setState(() => _parking = value),
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(left: 68),
+                  child: Divider(),
+                ),
+                _FilterToggleTile(
+                  icon: Icons.child_care_rounded,
+                  title: 'Детское меню',
+                  subtitle: 'Подойдёт для семейного ужина',
+                  value: _kidsMenu,
+                  onChanged: (value) => setState(() => _kidsMenu = value),
+                ),
+              ],
             ),
-            onChanged: (v) {
-              setState(() {
-                _range = v;
-              });
-            },
           ),
-
-          const SizedBox(height: 20),
-
-          ElevatedButton(
-            onPressed: _apply,
-            child: const Text('Применить'),
+          const SizedBox(height: 32),
+          const SectionTitle('Средний чек'),
+          const SizedBox(height: 14),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _PriceLabel(
+                          caption: 'От',
+                          value: '${_range.start.round()} ₽',
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 14),
+                        child: Icon(
+                          Icons.arrow_forward_rounded,
+                          color: AppColors.muted,
+                          size: 20,
+                        ),
+                      ),
+                      Expanded(
+                        child: _PriceLabel(
+                          caption: 'До',
+                          value: '${_range.end.round()} ₽',
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  RangeSlider(
+                    values: _range,
+                    min: 0,
+                    max: 5000,
+                    divisions: 10,
+                    labels: RangeLabels(
+                      '${_range.start.round()} ₽',
+                      '${_range.end.round()} ₽',
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        _range = value;
+                      });
+                    },
+                  ),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '0 ₽',
+                        style: TextStyle(color: AppColors.muted, fontSize: 12),
+                      ),
+                      Text(
+                        '5 000 ₽',
+                        style: TextStyle(color: AppColors.muted, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          12,
+          20,
+          12 + MediaQuery.paddingOf(context).bottom,
+        ),
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          border: Border(top: BorderSide(color: AppColors.outline)),
+        ),
+        child: ElevatedButton.icon(
+          onPressed: _apply,
+          icon: const Icon(Icons.check_rounded),
+          label: const Text('Показать рестораны'),
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterToggleTile extends StatelessWidget {
+  const _FilterToggleTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return CheckboxListTile(
+      value: value,
+      onChanged: (newValue) => onChanged(newValue ?? false),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      secondary: Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          color: AppColors.oliveSoft,
+          borderRadius: BorderRadius.circular(13),
+        ),
+        child: Icon(icon, color: AppColors.olive, size: 21),
+      ),
+      title: Text(title, style: Theme.of(context).textTheme.titleMedium),
+      subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
+    );
+  }
+}
+
+class _PriceLabel extends StatelessWidget {
+  const _PriceLabel({required this.caption, required this.value});
+
+  final String caption;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.cream,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(caption, style: Theme.of(context).textTheme.bodyMedium),
+          const SizedBox(height: 2),
+          Text(value, style: Theme.of(context).textTheme.titleMedium),
         ],
       ),
     );

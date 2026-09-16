@@ -1,13 +1,10 @@
-import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_project/app_theme.dart';
 import 'package:flutter_project/real_restaurant_api.dart';
 import 'package:flutter_project/restaurant_list_screen.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
@@ -22,7 +19,7 @@ class RestaurantGuideApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Ресторанный гид',
-      theme: ThemeData(useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange)),
+      theme: AppTheme.light,
       home: const RegistrationScreen(),
     );
   }
@@ -187,7 +184,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     _api = RealRestaurantApi(baseUrl: baseUrl);
   }
 
-  Future<int> _getOrCreateUserId(String name, String phone, String email) async {
+  Future<int> _getOrCreateUserId(
+    String name,
+    String phone,
+    String email,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     int? userId = prefs.getInt('userId');
     if (userId == null) {
@@ -241,83 +242,226 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       future: _init,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
-        }
-        return Scaffold(
-          appBar: AppBar(title: const Text('Регистрация')),
-          body: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Form(
-              key: _formKey,
+          return const Scaffold(
+            body: Center(
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(labelText: 'Имя'),
-                    validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Введите имя' : null,
-                  ),
-                  const SizedBox(height: 12),
-
-                  TextFormField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      PhoneInputFormatter(),
-                    ],
-                    decoration: const InputDecoration(
-                      hintText: '+7-XXX-XXX-XX-XX',
-                    ),
-                    validator: validatePhone,
-                  ),
-                  const SizedBox(height: 12),
-
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: _validateEmail,
-                  ),
-                  const SizedBox(height: 12),
-
-                  CheckboxListTile(
-                    value: _consent,
-                    onChanged: (v) {
-                      setState(() {
-                        _consent = v ?? false;
-                      });
-                    },
-                    title: const Text('Согласие на обработку данных'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (!_formKey.currentState!.validate()) return;
-                      if (!_consent) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Нужно дать согласие')));
-                        return;
-                      }
-                      final userId = await _getOrCreateUserId(_nameController.text.trim(), _phoneController.text.trim(), _emailController.text.trim());
-                      if (!mounted) return;
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => RestaurantListScreen(
-                            api: _api,
-                            userName: _nameController.text.trim(),
-                            userId: userId,
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text('Зарегистрироваться'),
-                  ),
+                  _BrandMark(size: 72),
+                  SizedBox(height: 24),
+                  CircularProgressIndicator(strokeWidth: 2.5),
                 ],
               ),
             ),
+          );
+        }
+        return Scaffold(
+          body: Stack(
+            children: [
+              const Positioned(
+                right: -82,
+                top: -86,
+                child: _DecorativeCircle(size: 236, color: AppColors.oliveSoft),
+              ),
+              const Positioned(
+                left: -54,
+                top: 198,
+                child: _DecorativeCircle(
+                  size: 118,
+                  color: AppColors.accentSoft,
+                ),
+              ),
+              SafeArea(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(24, 26, 24, 32),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 520),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Row(
+                                  children: [
+                                    _BrandMark(size: 48),
+                                    SizedBox(width: 12),
+                                    Text(
+                                      'TABLE',
+                                      style: TextStyle(
+                                        color: AppColors.olive,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 2.2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 54),
+                                Text(
+                                  'Ваш столик уже\nгде-то ждёт',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.displaySmall,
+                                ),
+                                const SizedBox(height: 14),
+                                Text(
+                                  'Откройте лучшие места города и бронируйте их за пару касаний.',
+                                  style: Theme.of(context).textTheme.bodyLarge
+                                      ?.copyWith(color: AppColors.muted),
+                                ),
+                                const SizedBox(height: 30),
+                                Card(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Давайте знакомиться',
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.titleLarge,
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          'Заполните данные, чтобы управлять своими бронями.',
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.bodyMedium,
+                                        ),
+                                        const SizedBox(height: 22),
+                                        TextFormField(
+                                          controller: _nameController,
+                                          textCapitalization:
+                                              TextCapitalization.words,
+                                          textInputAction: TextInputAction.next,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Имя',
+                                            hintText: 'Как к вам обращаться?',
+                                            prefixIcon: Icon(
+                                              Icons.person_outline_rounded,
+                                            ),
+                                          ),
+                                          validator: (v) =>
+                                              v == null || v.trim().isEmpty
+                                              ? 'Введите имя'
+                                              : null,
+                                        ),
+                                        const SizedBox(height: 14),
+                                        TextFormField(
+                                          controller: _phoneController,
+                                          keyboardType: TextInputType.phone,
+                                          textInputAction: TextInputAction.next,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .digitsOnly,
+                                            PhoneInputFormatter(),
+                                          ],
+                                          decoration: const InputDecoration(
+                                            labelText: 'Телефон',
+                                            hintText: '+7-XXX-XXX-XX-XX',
+                                            prefixIcon: Icon(
+                                              Icons.phone_outlined,
+                                            ),
+                                          ),
+                                          validator: validatePhone,
+                                        ),
+                                        const SizedBox(height: 14),
+                                        TextFormField(
+                                          controller: _emailController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Email',
+                                            hintText: 'name@example.com',
+                                            prefixIcon: Icon(
+                                              Icons.alternate_email_rounded,
+                                            ),
+                                          ),
+                                          keyboardType:
+                                              TextInputType.emailAddress,
+                                          textInputAction: TextInputAction.done,
+                                          validator: _validateEmail,
+                                        ),
+                                        const SizedBox(height: 12),
+                                        CheckboxListTile(
+                                          value: _consent,
+                                          onChanged: (v) {
+                                            setState(() {
+                                              _consent = v ?? false;
+                                            });
+                                          },
+                                          title: const Text(
+                                            'Согласен на обработку данных',
+                                          ),
+                                          subtitle: const Text(
+                                            'Данные нужны только для бронирования',
+                                          ),
+                                          contentPadding: EdgeInsets.zero,
+                                          controlAffinity:
+                                              ListTileControlAffinity.leading,
+                                        ),
+                                        const SizedBox(height: 12),
+                                        ElevatedButton.icon(
+                                          onPressed: () async {
+                                            if (!_formKey.currentState!
+                                                .validate()) {
+                                              return;
+                                            }
+                                            if (!_consent) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Нужно дать согласие',
+                                                  ),
+                                                ),
+                                              );
+                                              return;
+                                            }
+                                            final userId =
+                                                await _getOrCreateUserId(
+                                                  _nameController.text.trim(),
+                                                  _phoneController.text.trim(),
+                                                  _emailController.text.trim(),
+                                                );
+                                            if (!context.mounted) return;
+                                            Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    RestaurantListScreen(
+                                                      api: _api,
+                                                      userName: _nameController
+                                                          .text
+                                                          .trim(),
+                                                      userId: userId,
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                          icon: const Icon(
+                                            Icons.arrow_forward_rounded,
+                                          ),
+                                          label: const Text('Найти ресторан'),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -325,12 +469,58 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 }
 
+class _BrandMark extends StatelessWidget {
+  const _BrandMark({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: AppColors.olive,
+        borderRadius: BorderRadius.circular(size * .32),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x24344638),
+            blurRadius: 20,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Icon(
+        Icons.restaurant_menu_rounded,
+        size: size * .5,
+        color: Colors.white,
+      ),
+    );
+  }
+}
+
+class _DecorativeCircle extends StatelessWidget {
+  const _DecorativeCircle({required this.size, required this.color});
+
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    );
+  }
+}
+
 class PhoneInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue,
-      TextEditingValue newValue,
-      ) {
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     String digits = newValue.text.replaceAll(RegExp(r'\D'), '');
 
     // убираем ведущую 7 или 8 (частый кейс)
