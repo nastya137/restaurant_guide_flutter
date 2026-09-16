@@ -2,29 +2,19 @@
 
 Мобильное приложение на Flutter для поиска ресторанов, просмотра детальной информации и бронирования столиков. Данные загружаются с удалённого REST API, а брони сохраняются на сервере.
 
-## Интерфейс
-
-Пользовательский сценарий: регистрация → поиск и фильтрация → просмотр ресторана → бронирование → управление бронями.
+## Интерфейс приложения
 
 <p align="center">
-  <img src="docs/portfolio/01-overview.jpg" width="100%" alt="Обзор приложения Restaurant Guide">
+  <img src="docs/screenshots/01-registration.jpg" width="30%" alt="Регистрация">
+  <img src="docs/screenshots/02-restaurant-list.jpg" width="30%" alt="Список ресторанов">
+  <img src="docs/screenshots/03-filters.jpg" width="30%" alt="Фильтры">
 </p>
 
-<table>
-  <tr>
-    <td width="50%">
-      <img src="docs/portfolio/02-discovery.jpg" alt="Каталог ресторанов и фильтры">
-    </td>
-    <td width="50%">
-      <img src="docs/portfolio/03-booking-flow.jpg" alt="Просмотр ресторана и бронирование столика">
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2" align="center">
-      <img src="docs/portfolio/04-booking-management.jpg" width="50%" alt="Регистрация и управление бронированиями">
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="docs/screenshots/04-restaurant-details.jpg" width="30%" alt="Страница ресторана">
+  <img src="docs/screenshots/05-booking.jpg" width="30%" alt="Бронирование столика">
+  <img src="docs/screenshots/06-my-bookings.jpg" width="30%" alt="Мои бронирования">
+</p>
 
 ## Функциональность
 
